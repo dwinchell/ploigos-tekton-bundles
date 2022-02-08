@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: ploigos-everything-workflow-
+spec:
+  params:
+  - name: appRepoUrl
+    value: foo
+  - name: appRepoRef
+    value: foo
+  - name: pgpKeysSecretName
+    value: foo
+  - name: workflowWorkerImageUnitTest
+    value: foo
+  - name: workflowWorkerImagePackage
+    value: foo
+  - name: workflowWorkerImagePushArtifacts
+    value: foo
+  - name: workflowWorkerImageUAT
+    value: foo
+  - name: workflowWorkerImageAutoGov
+    value: foo
+  pipelineRef:
+    name: ploigos-everything-workflow
+  workspaces:
+  - name: app
+    persistentVolumeClaim:
+      claimName: app
+  - name: home
+    persistentVolumeClaim:
+      claimName: home
