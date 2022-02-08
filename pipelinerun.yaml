@@ -22,6 +22,7 @@ spec:
     value: foo
   pipelineRef:
     name: ploigos-everything-workflow
+    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle
   workspaces:
   - name: app
     persistentVolumeClaim:
