@@ -34,7 +34,7 @@ spec:
       workspace: app
   params:
   - default: "false"
-    description: Log any *sh commands used during execution.
+    description: Log any sh commands used during execution.
     name: verbose
     type: string
   - description: |
