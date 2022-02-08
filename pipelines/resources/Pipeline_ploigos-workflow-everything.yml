@@ -2,10 +2,9 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: {{ include "ploigos-workflow-tekton.pipelineName" . | quote }}
+  name: ploigos-everything-workflow
   labels:
     ploigos.dev/workflow: standard
-    {{- include "ploigos-workflow.labels" . | nindent 4 }}
 spec:
   workspaces:
   - name: home
@@ -15,14 +14,6 @@ spec:
     description: |
       Workspace to checkout the application this workflow is for and set as the working directory
       for the step executions.
-  {{- if $.Values.global.separatePlatformConfig }}
-  - name: ploigos-platform-config
-    description: |
-      Workspace containing platform-level config.
-  - name: ploigos-platform-config-secrets
-    description: |
-      Workspace containing platform-level secrets.
-  {{- end }}
   params:
     - name: verbose
       description: Log any *sh commands used during execution.
@@ -424,12 +415,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -464,12 +449,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -504,12 +483,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -544,12 +517,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -584,12 +551,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -624,12 +585,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -664,12 +619,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -704,12 +653,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -752,12 +695,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -793,12 +730,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -833,12 +764,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -869,12 +794,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -926,12 +845,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -968,12 +881,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1010,12 +917,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1052,12 +953,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1094,12 +989,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1160,12 +1049,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1202,12 +1085,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1244,12 +1121,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1286,12 +1157,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1328,12 +1193,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1387,12 +1246,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1429,12 +1282,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1471,12 +1318,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1513,12 +1354,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
@@ -1550,12 +1385,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-    {{- if $.Values.global.separatePlatformConfig }}
-    - name: ploigos-platform-config
-      workspace: ploigos-platform-config
-    - name: ploigos-platform-config-secrets
-      workspace: ploigos-platform-config-secrets
-    {{- end }}
     params:
     - name: verbose
       value: $(params.verbose)
