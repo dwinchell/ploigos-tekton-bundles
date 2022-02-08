@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  creationTimestamp: null
+  generateName: ploigos-git-clone-run-
+  namespace: ploigos-everything-pipeline
+spec:
+  params:
+  - name: deleteExisting
+    value: "true"
+  - name: image
+    value: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.12.1
+  - name: imagePullPolicy
+    value: IfNotPresent
+  - name: refspec
+    value: +refs/heads/main:main
+  - name: revision
+    value: main
+  - name: sslVerify
+    value: "true"
+  - name: url
+    value: ssh://gitea@gitea.tssc.rht-set.com:2022/ploigos-reference-applications/reference-quarkus-mvn.git
+  - name: verbose
+    value: "true"
+  resources: {}
+  serviceAccountName: pipeline
+  taskRef:
+    name: ploigos-git-clone
+  timeout: 1h0m0s
+  workspaces:
+  - name: output
+    persistentVolumeClaim:
+      claimName: app
+status:
+  podName: ""

@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   labels:
     ploigos.dev/workflow: standard
-  name: ploigos-everything-workflow
+  name: ploigos-everything-pipeline
 spec:
   finally:
   - name: report
@@ -25,8 +25,8 @@ spec:
     - name: environment
       value: $(params.envNameProd)
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     workspaces:
     - name: home
       workspace: home
@@ -192,7 +192,7 @@ spec:
       when running this pipeline.
     name: workflowWorkersImagePullPolicy
     type: string
-  - default: ploigos/ploigos-base:latest
+  - default: quay.io/ploigos/ploigos-base:latest
     description: |
       Container image to use when creating a workflow worker
       to run pipeline steps when no other specific container image has been
@@ -276,8 +276,8 @@ spec:
     - name: pattern
       value: $(params.ciOnlyGitRefPatterns)|$(params.devGitRefPatterns)|$(params.releaseGitRefPatterns)
     taskRef:
-      kind: ClusterTask
-      name: pattern-matcher
+      name: ploigos-pattern-matcher
+      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: setup-app-clone
     params:
     - name: verbose
@@ -299,8 +299,8 @@ spec:
     runAfter:
     - setup-stage-gate
     taskRef:
-      kind: ClusterTask
       name: ploigos-git-clone
+      bundle: quay.io/dwinchell_redhat/ploigos-git-clone-task-bundle
     when:
     - input: $(tasks.setup-stage-gate.results.matches)
       operator: in
@@ -333,8 +333,8 @@ spec:
     - setup-stage-gate
     - setup-app-clone
     taskRef:
-      kind: ClusterTask
-      name: ploigos-setup-workflow-step-runner
+      name: ploigos-setup-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-setup-step-runner-task-bundle
     when:
     - input: $(tasks.setup-stage-gate.results.matches)
       operator: in
@@ -357,8 +357,8 @@ spec:
     - setup-stage-gate
     - setup-workflow-step-runner
     taskRef:
-      kind: ClusterTask
-      name: import-pgp-keys
+      name: ploigos-import-pgp-keys
+      bundle: quay.io/dwinchell_redhat/ploigos-import-pgp-keys-task-bundle
     when:
     - input: $(tasks.setup-stage-gate.results.matches)
       operator: in
@@ -380,8 +380,8 @@ spec:
     - setup-workflow-step-runner
     - setup-pgp-keys
     taskRef:
-      kind: ClusterTask
-      name: pattern-matcher
+      name: ploigos-pattern-matcher
+      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: ci-generate-metadata
     params:
     - name: verbose
@@ -401,8 +401,8 @@ spec:
     runAfter:
     - ci-stage-gate
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -432,8 +432,8 @@ spec:
     runAfter:
     - ci-generate-metadata
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -463,8 +463,8 @@ spec:
     runAfter:
     - ci-tag-source-code
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -494,8 +494,8 @@ spec:
     runAfter:
     - ci-run-unit-tests
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -525,8 +525,8 @@ spec:
     runAfter:
     - ci-package-application
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -556,8 +556,8 @@ spec:
     runAfter:
     - ci-static-code-analysis
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -587,8 +587,8 @@ spec:
     runAfter:
     - ci-push-application-to-repository
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner-container-build-capabilities
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -618,8 +618,8 @@ spec:
     runAfter:
     - ci-create-container-image
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner-container-build-capabilities
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -650,8 +650,8 @@ spec:
     - ci-create-container-image
     - ci-static-image-scan-compliance
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner-container-build-capabilities
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -682,8 +682,8 @@ spec:
     - ci-static-image-scan-vulnerability
     - ci-static-image-scan-compliance
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -713,8 +713,8 @@ spec:
     runAfter:
     - ci-push-container-image-to-repository
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -744,8 +744,8 @@ spec:
     runAfter:
     - ci-sign-container-image
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     workspaces:
     - name: home
       workspace: home
@@ -762,8 +762,8 @@ spec:
     runAfter:
     - ci-generate-evidence
     taskRef:
-      kind: ClusterTask
-      name: pattern-matcher
+      name: ploigos-pattern-matcher
+      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: dev-audit-attestation
     params:
     - name: verbose
@@ -785,8 +785,8 @@ spec:
     runAfter:
     - dev-stage-gate
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -818,8 +818,8 @@ spec:
     runAfter:
     - dev-audit-attestation
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -851,8 +851,8 @@ spec:
     runAfter:
     - dev-deploy-or-update-environment
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -884,8 +884,8 @@ spec:
     runAfter:
     - dev-validate-environment-configuration
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -917,8 +917,8 @@ spec:
     runAfter:
     - dev-run-user-acceptance-tests
     taskRef:
-      kind: ClusterTask
       name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
