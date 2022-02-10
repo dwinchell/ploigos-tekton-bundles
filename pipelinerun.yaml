@@ -32,7 +32,7 @@ spec:
     value: ploigos-step-runner-config/
   pipelineRef:
     name: ploigos-everything-pipeline
-    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle
+    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle:latest
   workspaces:
   - name: app
     persistentVolumeClaim:

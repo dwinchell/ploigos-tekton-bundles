@@ -10,20 +10,8 @@ spec:
     params:
     - name: verbose
       value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageAutoGov)
     - name: imagePullPolicy
       value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: report
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    - name: environment
-      value: $(params.envNameProd)
     taskRef:
       name: ploigos-step-runner
       bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
@@ -102,11 +90,6 @@ spec:
       Continuous Integration (CI) workflow and then the deployment to
       "Release" environment(s) (IE: "TEST" and then "PROD" environments) workflow.
     name: releaseGitRefPatterns
-    type: string
-  - default: ploigos-step-runner
-    description: |
-      Name of the python package to use as the Workflow Step Runner.
-    name: stepRunnerPackageName
     type: string
   - default: "false"
     description: |
@@ -309,24 +292,27 @@ spec:
     workspaces:
     - name: output
       workspace: app
+  - name: ci-stage-gate
+    params:
+    - name: verbose
+      value: $(params.verbose)
+    - name: input
+      value: $(params.appRepoRef)
+    - name: pattern
+      value: $(params.ciOnlyGitRefPatterns)|$(params.devGitRefPatterns)|$(params.releaseGitRefPatterns)
+    runAfter:
+    - setup-app-clone
+    taskRef:
+      name: ploigos-pattern-matcher
+      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: ci-run-unit-tests
     params:
     - name: verbose
       value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageUnitTest)
     - name: imagePullPolicy
       value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: unit-test
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
     runAfter:
-    - ci-tag-source-code
+    - ci-stage-gate
     taskRef:
       name: ploigos-step-runner
       bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
@@ -344,18 +330,8 @@ spec:
     params:
     - name: verbose
       value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImagePackage)
     - name: imagePullPolicy
       value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: package
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
     runAfter:
     - ci-run-unit-tests
     taskRef:
@@ -373,20 +349,10 @@ spec:
       workspace: app
   - name: ci-static-code-analysis
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageStaticCodeAnalysis)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: static-code-analysis
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-package-application
     taskRef:
@@ -406,18 +372,8 @@ spec:
     params:
     - name: verbose
       value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImagePushArtifacts)
     - name: imagePullPolicy
       value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: push-artifacts
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
     runAfter:
     - ci-static-code-analysis
     taskRef:
@@ -435,25 +391,15 @@ spec:
       workspace: app
   - name: ci-create-container-image
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageContainerOperations)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: create-container-image
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-push-application-to-repository
     taskRef:
-      name: ploigos-step-runner-container-build-capabilities
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
+      name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -466,25 +412,15 @@ spec:
       workspace: app
   - name: ci-static-image-scan-compliance
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageContainerImageStaticComplianceScan)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: container-image-static-compliance-scan
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-create-container-image
     taskRef:
-      name: ploigos-step-runner-container-build-capabilities
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
+      name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -497,26 +433,16 @@ spec:
       workspace: app
   - name: ci-static-image-scan-vulnerability
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageContainerImageStaticVulnerabilityScan)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: container-image-static-vulnerability-scan
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-create-container-image
     - ci-static-image-scan-compliance
     taskRef:
-      name: ploigos-step-runner-container-build-capabilities
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-container-build-capabilities-task-bundle
+      name: ploigos-step-runner
+      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -529,20 +455,10 @@ spec:
       workspace: app
   - name: ci-push-container-image-to-repository
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageContainerOperations)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: push-container-image
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-static-image-scan-vulnerability
     - ci-static-image-scan-compliance
@@ -561,20 +477,10 @@ spec:
       workspace: app
   - name: ci-sign-container-image
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageContainerOperations)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: sign-container-image
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-push-container-image-to-repository
     taskRef:
@@ -592,20 +498,10 @@ spec:
       workspace: app
   - name: ci-generate-evidence
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageAutoGov)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: generate-evidence
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-sign-container-image
     taskRef:
@@ -633,18 +529,6 @@ spec:
     params:
     - name: verbose
       value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageAutoGov)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: audit-attestation
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
     - name: environment
       value: $(params.envNameDev)
     runAfter:
@@ -664,22 +548,10 @@ spec:
       workspace: app
   - name: dev-deploy-or-update-environment
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageDeploy)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: deploy
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    - name: environment
-      value: $(params.envNameDev)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - dev-audit-attestation
     taskRef:
@@ -697,22 +569,10 @@ spec:
       workspace: app
   - name: dev-validate-environment-configuration
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageValidateEnvironmentConfiguration)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: validate-environment-configuration
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    - name: environment
-      value: $(params.envNameDev)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - dev-deploy-or-update-environment
     taskRef:
@@ -730,22 +590,10 @@ spec:
       workspace: app
   - name: dev-run-user-acceptance-tests
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageUAT)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: uat
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    - name: environment
-      value: $(params.envNameDev)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - dev-validate-environment-configuration
     taskRef:
@@ -763,22 +611,10 @@ spec:
       workspace: app
   - name: dev-generate-evidence
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageAutoGov)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: generate-evidence
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    - name: environment
-      value: $(params.envNameDev)
+      - name: verbose
+        value: $(params.verbose)
+      - name: imagePullPolicy
+        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - dev-run-user-acceptance-tests
     taskRef:

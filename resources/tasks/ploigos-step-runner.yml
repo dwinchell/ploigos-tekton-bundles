@@ -25,37 +25,11 @@ spec:
     description: log the commands used during execution
     type: string
     default: "false"
-  - name: image
-    type: string
-    description: |
-      Container image to run the steps of this task in.
-    default: ubi8-minimal
   - name: imagePullPolicy
     type: string
     description: |
       Policy for pulling new versions of the given image.
     default: IfNotPresent
-  - name: venvPath
-    type: string
-    description: |
-      Required.
-      Path to the virtual environment to activate and run this step in the context of.
-  - name: stepRunnerPackageName
-    type: string
-    description: |
-      Name of the python package to use as Step Runner.
-    default: "ploigos-step-runner"
-  - name: stepName
-    type: string
-    description: |
-      Required.
-      Name of the Workflow step for the Workflow Step Runner to run.
-  - name: stepRunnerConfigDir
-    type: string
-    description: |
-      Required.
-      Path to the Step Runner configuration to pass to the
-      Workflow Step Runner when running the step.
   - name: environment
     type: string
     description: |
@@ -65,34 +39,15 @@ spec:
       This should be equal to one of the environment names used in one or more of the
       Step Runner configuration files in the given Step Runner configuration directory.
     default: ""
-  - name: pauseForDebugBeforeStepRun
-    type: string
-    description: |
-      If "true" will pause before running the step so a workflow debugger can log into the
-      CI worker pod and look around
-    default: "false"
-
   steps:
   - name: workflow-step
-    image: $(params.image)
+    image: ubi8-minimal
     imagePullPolicy: $(params.imagePullPolicy)
     env:
     - name: HOME
       value: $(workspaces.home.path)
-    - name: VERBOSE
-      value: $(params.verbose)
-    - name: PAUSE_FOR_DEBUG_BEFORE_STEP_RUN
-      value: $(params.pauseForDebugBeforeStepRun)
-    - name: VENV_PATH
-      value: $(params.venvPath)
-    - name: PSR_CONFIG_ARG
-      value: $(params.stepRunnerConfigDir)
-    - name: PSR_STEP_NAME
-      value: $(params.stepName)
-    - name: PSR_ENVIRONMENT
-      value: $(params.environment)
     workingDir: $(workspaces.app.path)
     script: |
       #!/bin/sh
-      No more step runner.
+      echo No more step runner.
       exit 1
