@@ -40,3 +40,5 @@ spec:
   - name: home
     persistentVolumeClaim:
       claimName: home
+  - name: maven-settings
+    emptyDir: {}

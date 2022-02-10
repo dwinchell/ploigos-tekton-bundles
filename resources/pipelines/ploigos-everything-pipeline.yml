@@ -307,25 +307,24 @@ spec:
       bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: ci-run-unit-tests
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
+    - name: GOALS
+      value:
+      - --no-transfer-progress
+      - test
     runAfter:
     - ci-stage-gate
     taskRef:
-      name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
+      name: maven
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
       values:
       - "true"
     workspaces:
-    - name: home
-      workspace: home
-    - name: app
+    - name: source
       workspace: app
+    - name: maven-settings
+      workspace: maven-settings
   - name: ci-package-application
     params:
     - name: verbose
@@ -638,3 +637,8 @@ spec:
       Workspace to checkout the application this workflow is for and set as the working directory
       for the step executions.
     name: app
+  - description: |
+      Workspace for the Maven settings directory (.m2). Useful for adding files like settings.xml.
+      You can use a ConfigMap to inject files. See https://github.com/tektoncd/catalog/tree/main/task/maven/0.2
+      for usage.
+    name: maven-settings
