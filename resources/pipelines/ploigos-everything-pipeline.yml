@@ -413,37 +413,6 @@ spec:
       workspace: home
     - name: app
       workspace: app
-  - name: ci-tag-source-code
-    params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: image
-      value: $(params.workflowWorkerImageDefault)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    - name: stepRunnerPackageName
-      value: $(params.stepRunnerPackageName)
-    - name: venvPath
-      value: $(tasks.setup-workflow-step-runner.results.venvPath)
-    - name: stepName
-      value: tag-source
-    - name: stepRunnerConfigDir
-      value: $(params.stepRunnerConfigDir)
-    runAfter:
-    - ci-generate-metadata
-    taskRef:
-      name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
-    when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
   - name: ci-run-unit-tests
     params:
     - name: verbose
