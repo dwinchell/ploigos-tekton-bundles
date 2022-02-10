@@ -95,3 +95,4 @@ spec:
     script: |
       #!/bin/sh
       No more step runner.
+      exit 1
