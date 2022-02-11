@@ -12,6 +12,7 @@ spec:
           - -Dexpression=project.version
           - -q
           - -DforceStdout
+          - -Doutput=/results/tekton/artifact-version
           - org.apache.maven.plugins:maven-help-plugin:evaluate
   workspaces:
     - name: source
