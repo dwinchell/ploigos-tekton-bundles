@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: ploigos-everything-workflow-
+  generateName: everything-java-bundle-
 spec:
   params:
   - name: appRepoUrl
@@ -31,8 +31,8 @@ spec:
   - name: stepRunnerConfigDir
     value: ploigos-step-runner-config/
   pipelineRef:
-    name: ploigos-everything-pipeline
-    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle:latest
+    name: everything-java-pipeline-bundle
+    bundle: quay.io/dwinchell_redhat/everything-java-pipeline-bundle:latest
   workspaces:
   - name: app
     persistentVolumeClaim:

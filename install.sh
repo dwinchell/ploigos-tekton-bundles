@@ -5,9 +5,11 @@ IMAGE_REGISTRY=quay.io
 IMAGE_REGISTRY_USER=dwinchell_redhat
 IMAGE_TAG=latest
 
+# Create pvcs
+oc apply -f pvcs.yaml
+
 # Build pipeline bundles
-oc delete pipeline ploigos-everything-pipeline
-oc create -f resources/pipelines/ploigos-everything-pipeline.yml
+oc apply -f resources/pipelines/everything-java.yml
 
 # Build task bundles
 for YAML_FILE in $(ls resources/tasks/*.yml); do
@@ -15,3 +17,5 @@ for YAML_FILE in $(ls resources/tasks/*.yml); do
   oc apply -f ${YAML_FILE}
 done
 
+# Install third party tasks
+./install-third-party.sh

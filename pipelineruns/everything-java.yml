@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: ploigos-everything-dev-
+  generateName: everything-java-
 spec:
   pipelineRef:
-    name: ploigos-everything-pipeline
+    name: everything-java
   params:
   - name: appRepoUrl
     value: ssh://gitea@gitea.tssc.rht-set.com:2022/ploigos-reference-applications/reference-quarkus-mvn.git

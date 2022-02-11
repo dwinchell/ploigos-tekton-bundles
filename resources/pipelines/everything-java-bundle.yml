@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   labels:
     ploigos.dev/workflow: standard
-  name: ploigos-everything-pipeline
+  name: everything-java-bundle
 spec:
   finally:
   - name: report

@@ -1,8 +1,7 @@
 #!/bin/sh
 set -e
 
-oc apply -f pvcs.yaml
-
-oc create -f pipelinerun.yaml
+oc create -f pipelineruns/everything-java.yml
 sleep 1
 tkn pipelinerun describe --last
+
