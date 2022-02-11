@@ -347,25 +347,21 @@ spec:
         workspace: maven-settings
   - name: ci-static-code-analysis
     params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
     - ci-package-application
     taskRef:
-      name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
+      name: sonarqube-scanner
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
       values:
       - "true"
     workspaces:
-    - name: home
-      workspace: home
-    - name: app
+    - name: source-dir
       workspace: app
+    - name: sonar-settings
+      secret:
+        secretName: sonar-settings
   - name: ci-push-application-to-repository
     params:
     - name: verbose
