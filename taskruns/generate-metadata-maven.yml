@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: manual-generate-metadata-maven-
+spec:
+  taskRef:
+    name: maven
+  params:
+      - name: GOALS
+        value:
+          - --no-transfer-progress
+          - -Dexpression=project.version
+          - -q
+          - -DforceStdout
+          - org.apache.maven.plugins:maven-help-plugin:evaluate
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: app
+    - name: maven-settings
+      emptyDir: {}
