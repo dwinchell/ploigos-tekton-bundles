@@ -124,7 +124,7 @@ spec:
     workspaces:
     - name: output
       workspace: app
-  - name: setup-read-source-version
+  - name: setup-read-code-version
     params:
     - name: GOALS
       value:
@@ -132,7 +132,7 @@ spec:
         - -Dexpression=project.version
         - -q
         - -DforceStdout
-        - -Doutput=/results/tekton/artifact-version
+        - -Doutput=/results/tekton/codeVersion
         - org.apache.maven.plugins:maven-help-plugin:evaluate
     runAfter:
       - setup-app-clone
@@ -148,6 +148,26 @@ spec:
         workspace: app
       - name: maven-settings
         workspace: maven-settings
+  - name: setup-generate-artifact-version
+    params:
+      - name: codeVersion
+        value: $(tasks.setup-read-code-version.results.codeVersion)
+      - name: gitRef
+        value: $(params.appRepoRef)
+      - name: gitCommit
+        value: $(tasks.setup-app-clone.results.commit)
+    results:
+      - name: codeVersion
+        description: The version of the code, read from the source code itself.
+    runAfter:
+      - setup-app-clone
+    taskRef:
+      name: generate-artifact-version
+    when:
+      - input: $(tasks.setup-stage-gate.results.matches)
+        operator: in
+        values:
+          - "true"
   - name: ci-stage-gate
     params:
     - name: verbose
@@ -158,7 +178,8 @@ spec:
       value: $(params.ciOnlyGitRefPatterns)|$(params.devGitRefPatterns)|$(params.releaseGitRefPatterns)
     runAfter:
     - setup-app-clone
-    - setup-read-source-version
+    - setup-read-code-version
+    - setup-generate-artifact-version
     taskRef:
       name: ploigos-pattern-matcher
   - name: ci-run-unit-tests
