@@ -156,9 +156,6 @@ spec:
         value: $(params.appRepoRef)
       - name: gitCommit
         value: $(tasks.setup-app-clone.results.commit)
-    results:
-      - name: codeVersion
-        description: The version of the code, read from the source code itself.
     runAfter:
       - setup-app-clone
     taskRef:
