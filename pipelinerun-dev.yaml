@@ -5,7 +5,6 @@ metadata:
 spec:
   pipelineRef:
     name: ploigos-everything-pipeline
-    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle:latest
   params:
   - name: appRepoUrl
     value: ssh://gitea@gitea.tssc.rht-set.com:2022/ploigos-reference-applications/reference-quarkus-mvn.git

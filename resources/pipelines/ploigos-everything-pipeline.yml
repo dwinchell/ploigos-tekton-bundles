@@ -14,7 +14,6 @@ spec:
       value: $(params.workflowWorkersImagePullPolicy)
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     workspaces:
     - name: home
       workspace: home
@@ -260,7 +259,6 @@ spec:
       value: $(params.ciOnlyGitRefPatterns)|$(params.devGitRefPatterns)|$(params.releaseGitRefPatterns)
     taskRef:
       name: ploigos-pattern-matcher
-      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: setup-app-clone
     params:
     - name: verbose
@@ -283,7 +281,6 @@ spec:
     - setup-stage-gate
     taskRef:
       name: ploigos-git-clone
-      bundle: quay.io/dwinchell_redhat/ploigos-git-clone-task-bundle
     when:
     - input: $(tasks.setup-stage-gate.results.matches)
       operator: in
@@ -304,7 +301,6 @@ spec:
     - setup-app-clone
     taskRef:
       name: ploigos-pattern-matcher
-      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: ci-run-unit-tests
     params:
     - name: GOALS
@@ -327,46 +323,40 @@ spec:
       workspace: maven-settings
   - name: ci-package-application
     params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
+      - name: GOALS
+        value:
+          - --no-transfer-progress
+          - package
     runAfter:
-    - ci-run-unit-tests
+      - ci-run-unit-tests
     taskRef:
-      name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
+      name: maven
     when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
+      - input: $(tasks.ci-stage-gate.results.matches)
+        operator: in
+        values:
+          - "true"
     workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
+      - name: source
+        workspace: app
+      - name: maven-settings
+        workspace: maven-settings
   - name: ci-static-code-analysis
     params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
-    - ci-package-application
+      - ci-package-application
     taskRef:
-      name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
+      name: sonarqube-scanner
     when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
+      - input: $(tasks.ci-stage-gate.results.matches)
+        operator: in
+        values:
+          - "true"
     workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
+      - name: source-dir
+        workspace: app
+      - name: sonar-settings
+        workspace: sonar-settings
   - name: ci-push-application-to-repository
     params:
     - name: verbose
@@ -377,7 +367,6 @@ spec:
     - ci-static-code-analysis
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -398,7 +387,6 @@ spec:
     - ci-push-application-to-repository
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -419,7 +407,6 @@ spec:
     - ci-create-container-image
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -441,7 +428,6 @@ spec:
     - ci-static-image-scan-compliance
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -463,7 +449,6 @@ spec:
     - ci-static-image-scan-compliance
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -484,7 +469,6 @@ spec:
     - ci-push-container-image-to-repository
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -505,7 +489,6 @@ spec:
     - ci-sign-container-image
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     workspaces:
     - name: home
       workspace: home
@@ -523,7 +506,6 @@ spec:
     - ci-generate-evidence
     taskRef:
       name: ploigos-pattern-matcher
-      bundle: quay.io/dwinchell_redhat/ploigos-pattern-matcher-task-bundle
   - name: dev-audit-attestation
     params:
     - name: verbose
@@ -534,7 +516,6 @@ spec:
     - dev-stage-gate
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -555,7 +536,6 @@ spec:
     - dev-audit-attestation
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -576,7 +556,6 @@ spec:
     - dev-deploy-or-update-environment
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -597,7 +576,6 @@ spec:
     - dev-validate-environment-configuration
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -618,7 +596,6 @@ spec:
     - dev-run-user-acceptance-tests
     taskRef:
       name: ploigos-step-runner
-      bundle: quay.io/dwinchell_redhat/ploigos-step-runner-task-bundle
     when:
     - input: $(tasks.dev-stage-gate.results.matches)
       operator: in
@@ -642,3 +619,7 @@ spec:
       You can use a ConfigMap to inject files. See https://github.com/tektoncd/catalog/tree/main/task/maven/0.2
       for usage.
     name: maven-settings
+  - description: |
+      Workspace to contain SonarQube settings file (sonar.properties). Use a ConfigMap or Secret to inject sonar.propertes.
+      See https://github.com/tektoncd/catalog/tree/main/task/sonarqube-scanner/0.1 for usage.
+    name: sonar-settings
