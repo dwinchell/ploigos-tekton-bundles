@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: ploigos-everything-dev-
+spec:
+  pipelineRef:
+    name: ploigos-everything-pipeline
+    bundle: quay.io/dwinchell_redhat/ploigos-everything-pipeline-bundle:latest
+  params:
+  - name: appRepoUrl
+    value: ssh://gitea@gitea.tssc.rht-set.com:2022/ploigos-reference-applications/reference-quarkus-mvn.git
+  - name: appRepoRef
+    value: main
+  - name: pgpKeysSecretName
+    value: pgp-keys
+  - name: workflowWorkerImageDefault
+    value: quay.io/ploigos/ploigos-tool-maven:v1.0.0
+  - name: workflowWorkerImageUnitTest
+    value: quay.io/ploigos/ploigos-tool-maven:v1.0.0
+  - name: workflowWorkerImagePackage
+    value: quay.io/ploigos/ploigos-tool-maven:v1.0.0
+  - name: workflowWorkerImagePushArtifacts
+    value: quay.io/ploigos/ploigos-tool-maven:v1.0.0
+  - name: workflowWorkerImageUAT
+    value: quay.io/ploigos/ploigos-tool-maven:v1.0.0
+  - name: workflowWorkerImageAutoGov
+    value: quay.io/ploigos/ploigos-tool-autogov:v1.0.0
+  - name: workflowWorkerImageSourceClone
+    value: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.12.1
+  - name: devGitRefPatterns
+    value: main
+  - name: verbose
+    value: 'true'
+  - name: stepRunnerConfigDir
+    value: ploigos-step-runner-config/
+  workspaces:
+  - name: app
+    persistentVolumeClaim:
+      claimName: app
+  - name: home
+    persistentVolumeClaim:
+      claimName: home
+  - name: maven-settings
+    emptyDir: {}
+  - name: sonar-settings
+    secret:
+      secretName: sonar-settings
