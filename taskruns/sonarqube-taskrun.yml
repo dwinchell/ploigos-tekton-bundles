@@ -1,15 +1,14 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: manual-task-
+  generateName: manual-sonarqube-
 spec:
-  serviceAccountName: pipeline
   taskRef:
-    name: static-code-analysis
-  timeout: 10m0s
+    name: sonarqube-scanner
   workspaces:
     - name: source-dir
       persistentVolumeClaim:
         claimName: app
-  - name: sonar-settings
-    emptyDir: {}
+    - name: sonar-settings
+      secret:
+        secretName: sonar-settings
