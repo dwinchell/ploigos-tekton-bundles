@@ -1,0 +1,15 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: create-container-image
+spec:
+  taskRef:
+    name: create-container-image
+  params:
+  workspaces:
+    - name: home
+      persistentVolumeClaim:
+        claimName: home
+    - name: app
+      persistentVolumeClaim:
+        claimName: app
