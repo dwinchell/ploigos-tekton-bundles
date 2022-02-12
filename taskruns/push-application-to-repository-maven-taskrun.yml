@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: manual-ci-push-application-to-repository-
+  generateName: push-application-to-repository-
 spec:
   taskRef:
     name: maven

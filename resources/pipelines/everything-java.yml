@@ -144,7 +144,7 @@ spec:
       - name: gitRef
         value: $(params.appRepoRef)
       - name: gitCommit
-        value: $(tasks.setup-app-clone.commit)
+        value: $(tasks.setup-app-clone.results.commit)
     runAfter:
       - setup-read-code-version
     taskRef:
@@ -229,6 +229,27 @@ spec:
         workspace: app
       - name: sonar-settings
         workspace: sonar-settings
+  - name: ci-pre-push-application-to-repository
+    params:
+      - name: GOALS
+        value:
+          - --no-transfer-progress
+          - -DnewVersion=$(tasks.setup-generate-artifact-version.results.artifactVersion)
+          - versions:set
+    runAfter:
+      - ci-static-code-analysis
+    taskRef:
+      name: maven
+    when:
+      - input: $(tasks.ci-stage-gate.results.matches)
+        operator: in
+        values:
+          - "true"
+    workspaces:
+      - name: source
+        workspace: app
+      - name: maven-settings
+        workspace: maven-settings
   - name: ci-push-application-to-repository
     params:
       - name: GOALS
@@ -241,7 +262,7 @@ spec:
           - -DskipITs
           - deploy
     runAfter:
-      - ci-static-code-analysis
+      - ci-pre-push-application-to-repository
     taskRef:
       name: maven
     when:
