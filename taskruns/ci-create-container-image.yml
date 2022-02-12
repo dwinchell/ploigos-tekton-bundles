@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: ci-create-container-image
+spec:
+  taskRef:
+    name: buildah
+  params:
+    - name: IMAGE
+      value: quay.io/dwinchell_redhat/reference-quarkus-mvn
+    - name: DOCKERFILE
+      value: ./Containerfile
+    - name: BUILDER_IMAGE
+      value: quay.io/ploigos/ploigos-tool-containers:v1.0.0
+    - name: TLSVERIFY
+      value: "true"
+    - name: SKIP_PUSH
+      value: "true"
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: app

@@ -5,20 +5,6 @@ metadata:
     ploigos.dev/workflow: standard
   name: everything-java
 spec:
-  finally:
-  - name: report
-    params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: imagePullPolicy
-      value: $(params.workflowWorkersImagePullPolicy)
-    taskRef:
-      name: ploigos-step-runner
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
   params:
   - default: "false"
     description: Log any sh commands used during execution.
@@ -32,32 +18,22 @@ spec:
       Git reference (tag, branch) of the application repository to run the pipeline for.
     name: appRepoRef
     type: string
-  - default: true
+  - description: |
+      The pipeline will build and push an application image with this name. Do not include the tag because the pipeline
+      will generate it. Example: quay.io/myuser/myapp. The pipeline will push to i.e. the :1.0-mybranch-A34D2, :edge,
+      :1.0, and :latest tags as it progresses.
+    name: appImageName
+    type: string
+  - default: "true"
     description: |
       If this is "false", no tasks will use TLS verification. Leave it "true" in production. If you want to turn
       off verification for only some tasks, fork the pipeline and add pipeline parameters.
     name: tlsVerify
     type: string
-  - default: DEV
+  - default: ./Containerfile
     description: |
-      Name of the "Development" environment used in the Step Runner configuration
-      files and to pass to the Workflow Step Runner when running a step targeted to
-      the "Development" environment.
-    name: envNameDev
-    type: string
-  - default: TEST
-    description: |
-      Name of the "Test" environment used in the Step Runner configuration
-      files and to pass to the Workflow Step Runner when running a step targeted to
-      the "Test" environment.
-    name: envNameTest
-    type: string
-  - default: PROD
-    description: |
-      Name of the "Production" environment used in the Step Runner configuration
-      files and to pass to the Workflow Step Runner when running a step targeted to
-      the "Production" environment.
-    name: envNameProd
+      The path to the application's Containerfile or Dockerfile relative to the root of the source repository.
+    name: containerfile
     type: string
   - default: ^$
     description: |
@@ -277,10 +253,16 @@ spec:
         workspace: maven-settings
   - name: ci-create-container-image
     params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
+      - name: IMAGE
+        value: $(params.appImageName)
+      - name: DOCKERFILE
+        value: $(params.containerfile)
+      - name: TLSVERIFY
+        value: $(params.tlsVerify)
+      - name: BUILDER_IMAGE
+        value: quay.io/ploigos/ploigos-tool-containers:v1.0.0
+      - name: SKIP_PUSH
+        value: "true"
     runAfter:
     - ci-push-application-to-repository
     taskRef:
@@ -291,42 +273,10 @@ spec:
       values:
       - "true"
     workspaces:
-    - name: home
-      workspace: home
-    - name: app
+    - name: source
       workspace: app
   - name: ci-static-image-scan-compliance
     params:
-      - name: IMAGE
-        description: Reference of the image buildah will produce.
-      - name: BUILDER_IMAGE
-        description: The location of the buildah builder image.
-        default: quay.io/buildah/stable:v1.18.0
-      - name: STORAGE_DRIVER
-        description: Set buildah storage driver
-        default: overlay
-      - name: DOCKERFILE
-        description: Path to the Dockerfile to build.
-        default: ./Dockerfile
-      - name: CONTEXT
-        description: Path to the directory to use as context.
-        default: .
-      - name: TLSVERIFY
-        description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
-        default: "true"
-      - name: FORMAT
-        description: The format of the built container, oci or docker
-        default: "oci"
-      - name: BUILD_EXTRA_ARGS
-        description: Extra parameters passed for the build command when building images.
-        default: ""
-      - name: PUSH_EXTRA_ARGS
-        description: Extra parameters passed for the push command when pushing images.
-        type: string
-        default: ""
-      - name: SKIP_PUSH
-        description: Skip pushing the built image
-        default: "false"
     runAfter:
     - ci-create-container-image
     taskRef:
@@ -435,7 +385,7 @@ spec:
     - name: verbose
       value: $(params.verbose)
     - name: environment
-      value: $(params.envNameDev)
+      value: 'DEV'
     runAfter:
     - dev-stage-gate
     taskRef:
@@ -530,6 +480,20 @@ spec:
       workspace: home
     - name: app
       workspace: app
+  finally:
+    - name: report
+      params:
+        - name: verbose
+          value: $(params.verbose)
+        - name: imagePullPolicy
+          value: $(params.workflowWorkersImagePullPolicy)
+      taskRef:
+        name: ploigos-step-runner
+      workspaces:
+        - name: home
+          workspace: home
+        - name: app
+          workspace: app
   workspaces:
   - description: |
       Workspace for the container users home directory.
