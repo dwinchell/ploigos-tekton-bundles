@@ -239,7 +239,7 @@ spec:
           - -Dmaven.test.skip=true
           - -DskipTests
           - -DskipITs
-          - - deploy
+          - deploy
     runAfter:
       - ci-static-code-analysis
     taskRef:
