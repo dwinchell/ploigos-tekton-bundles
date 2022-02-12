@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: manual-read-source-version-maven-
+  generateName: package-application-
 spec:
   taskRef:
     name: maven
@@ -9,14 +9,11 @@ spec:
       - name: GOALS
         value:
           - --no-transfer-progress
-          - -Dexpression=project.version
-          - -q
-          - -DforceStdout
-          - -Doutput=/results/tekton/artifact-version
-          - org.apache.maven.plugins:maven-help-plugin:evaluate
+          - package
   workspaces:
     - name: source
       persistentVolumeClaim:
         claimName: app
     - name: maven-settings
       emptyDir: {}
+

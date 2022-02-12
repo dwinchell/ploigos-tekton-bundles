@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: manual-setup-app-clone-
+  generateName: ploigos-git-clone-
 spec:
   params:
     - name: url

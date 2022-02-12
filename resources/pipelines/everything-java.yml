@@ -125,29 +125,18 @@ spec:
     - name: output
       workspace: app
   - name: setup-read-code-version
-    params:
-    - name: GOALS
-      value:
-        - --no-transfer-progress
-        - -Dexpression=project.version
-        - -q
-        - -DforceStdout
-        - -Doutput=/results/tekton/codeVersion
-        - org.apache.maven.plugins:maven-help-plugin:evaluate
     runAfter:
       - setup-app-clone
     taskRef:
-      name: maven
+      name: read-code-version-maven
     when:
       - input: $(tasks.setup-stage-gate.results.matches)
         operator: in
         values:
           - "true"
     workspaces:
-      - name: source
+      - name: app
         workspace: app
-      - name: maven-settings
-        workspace: maven-settings
   - name: setup-generate-artifact-version
     params:
       - name: codeVersion
@@ -155,7 +144,7 @@ spec:
       - name: gitRef
         value: $(params.appRepoRef)
       - name: gitCommit
-        value: $(tasks.setup-app-clone.results.commit)
+        value: $(tasks.setup-app-clone.commit)
     runAfter:
       - setup-app-clone
     taskRef:

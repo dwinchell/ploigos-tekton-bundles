@@ -19,6 +19,11 @@ All downloaded Tasks are subject to the Apache Licesnse version 2.0. Please see 
 * Modifications
   * Added a sed command to redact the sonar.password when the Task cats out sonar-project.properties
 
+## yq
+* Upstream version: 0.3
+* https://raw.githubusercontent.com/tektoncd/catalog/blob/main/task/yq/0.3/yq.yaml
+* Modifications: none
+
 # How To
 ## Add a New Task from the Catalog
 * Download the yaml for the new version from https://github.com/tektoncd/catalog/.
