@@ -8,6 +8,11 @@ All downloaded Tasks are subject to the Apache Licesnse version 2.0. Please see 
 
 # Tasks
 
+## buildah
+* Upstream version: 0.3
+* Downloaded from: https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.3/buildah.yaml
+* Modifications: none
+
 ## maven
 * Upstream version: 0.2
 * Downloaded from: https://raw.githubusercontent.com/tektoncd/catalog/main/task/maven/0.2/maven.yaml
