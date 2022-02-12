@@ -32,11 +32,11 @@ spec:
       Git reference (tag, branch) of the application repository to run the pipeline for.
     name: appRepoRef
     type: string
-  - default: "true"
+  - default: true
     description: |
-      Passed to git-clone ClusterTask.
-      Defines if http.sslVerify should be set to true or false in the global git config.
-    name: appCloneSSLVerify
+      If this is "false", no tasks will use TLS verification. Leave it "true" in production. If you want to turn
+      off verification for only some tasks, fork the pipeline and add pipeline parameters.
+    name: tlsVerify
     type: string
   - default: DEV
     description: |
@@ -109,7 +109,7 @@ spec:
     - name: deleteExisting
       value: "true"
     - name: sslVerify
-      value: $(params.appCloneSSLVerify)
+      value: $(params.tlsVerify)
     - name: refspec
       value: +refs/heads/$(params.appRepoRef):$(params.appRepoRef)
     runAfter:
@@ -284,7 +284,7 @@ spec:
     runAfter:
     - ci-push-application-to-repository
     taskRef:
-      name: ploigos-step-runner
+      name: buildah
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -297,10 +297,36 @@ spec:
       workspace: app
   - name: ci-static-image-scan-compliance
     params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
+      - name: IMAGE
+        description: Reference of the image buildah will produce.
+      - name: BUILDER_IMAGE
+        description: The location of the buildah builder image.
+        default: quay.io/buildah/stable:v1.18.0
+      - name: STORAGE_DRIVER
+        description: Set buildah storage driver
+        default: overlay
+      - name: DOCKERFILE
+        description: Path to the Dockerfile to build.
+        default: ./Dockerfile
+      - name: CONTEXT
+        description: Path to the directory to use as context.
+        default: .
+      - name: TLSVERIFY
+        description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+        default: "true"
+      - name: FORMAT
+        description: The format of the built container, oci or docker
+        default: "oci"
+      - name: BUILD_EXTRA_ARGS
+        description: Extra parameters passed for the build command when building images.
+        default: ""
+      - name: PUSH_EXTRA_ARGS
+        description: Extra parameters passed for the push command when pushing images.
+        type: string
+        default: ""
+      - name: SKIP_PUSH
+        description: Skip pushing the built image
+        default: "false"
     runAfter:
     - ci-create-container-image
     taskRef:
