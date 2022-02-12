@@ -146,7 +146,7 @@ spec:
       - name: gitCommit
         value: $(tasks.setup-app-clone.commit)
     runAfter:
-      - setup-app-clone
+      - setup-read-code-version
     taskRef:
       name: generate-artifact-version
     when:
@@ -173,6 +173,7 @@ spec:
     - name: GOALS
       value:
       - --no-transfer-progress
+      - -Dquarkus.build.skip
       - test
     runAfter:
     - ci-stage-gate
