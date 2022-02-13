@@ -340,7 +340,7 @@ spec:
 #      - name: imagePullPolicy
 #        value: $(params.workflowWorkersImagePullPolicy)
 #    runAfter:
-#    - ci-push-container-image-to-repository
+#    - ci-push-container-image
 #    taskRef:
 #      name: ploigos-step-runner
 #    when:
@@ -380,7 +380,7 @@ spec:
       value: $(params.devGitRefPatterns)
     runAfter:
 #    - ci-generate-evidence
-     - ci-push-container-image-to-repository
+     - ci-push-container-image
     taskRef:
       name: ploigos-pattern-matcher
 
