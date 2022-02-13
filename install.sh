@@ -9,6 +9,7 @@ IMAGE_TAG=latest
 oc apply -f pvcs.yaml
 
 # Build pipeline bundles
+oc apply -f resources/pipelines/ci-java.yml
 oc apply -f resources/pipelines/everything-java.yml
 
 # Build task bundles
