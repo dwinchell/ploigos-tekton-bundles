@@ -310,18 +310,25 @@ spec:
 #      workspace: home
 #    - name: app
 #      workspace: app
+
   - name: ci-push-container-image
     params:
       - name: verbose
         value: $(params.verbose)
       - name: imagePullPolicy
         value: $(params.workflowWorkersImagePullPolicy)
+      - name: localImageTag
+        value: quay.io/dwinchell_redhat/my-image:latest
+      - name: remoteImageTag
+        value: registry-internal-nexus.apps.tssc.rht-set.com/ploigos-ref/tekton-test:latest
+      - name: pauseForDebugBeforeStepRun
+        value: "false"
     runAfter:
 #    - ci-static-image-scan-vulnerability
 #    - ci-static-image-scan-compliance
      - ci-create-container-image
     taskRef:
-      name: ploigos-step-runner
+      name: push-container-image
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -332,6 +339,8 @@ spec:
       workspace: home
     - name: app
       workspace: app
+    - name: container-auth
+      workspace: container-auth
 
 #  - name: ci-sign-container-image
 #    params:
