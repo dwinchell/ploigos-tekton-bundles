@@ -5,8 +5,6 @@ metadata:
   name: create-container-image
   annotations:
     tekton.dev/pipelines.minVersion: "0.14.0"
-    tekton.dev/tags: ploigos,python
-    tekton.dev/displayName: Workflow Step Runner with Elevated Capabilities
 spec:
   description: |
     Builds a container image using buildah. This is performed in a container with the Kubernetes securityContext
@@ -20,8 +18,14 @@ spec:
     description: |
       Workspace with the checked out application in to use as the
       working directory for the step execution.
+  - name: container-auth
+    description: |
+      Used to mount a secret with container-auth.json.
   params:
 
+  - name: outputImageTag
+    description: "The tag for the created image. Example: my-org/my-image:latest"
+    type: string
   - name: format
     default: oci
     type: string
@@ -31,11 +35,8 @@ spec:
   - name: image_spec_file
     default: Containerfile
     type: string
-  - name: container_image_build_address
-    default: localhost/ploigos-ref/ref-quarkus-mvn-tetkon-eve/fruit:1.0.2_531396d
-    type: string
   - name: containers_config_auth_file
-    default: /home/dwinchell/ploigos/reference-quarkus-mvn/step-runner-working/create-container-image/container-auth.json
+    default: container-auth.json
     type: string
   - name: context
     default: .
@@ -171,11 +172,11 @@ spec:
         chmod 600 ${passwd_home}/.ssh/id_*
       fi
 
-      buildah bud
+      buildah bud \
         --format=$(params.format) \
         --tls-verify=$(params.tls_verify) \
         --layers \
         -f $(params.image_spec_file) \
-        -t $(params.container_image_build_address) \
-        --authfile $(params.containers_config_auth_file)
+        -t localhost/pipeline/$(params.outputImageTag) \
+        --authfile $(workspaces.container-auth.path)/$(params.containers_config_auth_file) \
         $(params.context)

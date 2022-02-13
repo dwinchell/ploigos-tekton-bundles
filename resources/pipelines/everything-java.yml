@@ -253,34 +253,14 @@ spec:
         workspace: maven-settings
   - name: ci-create-container-image
     params:
-      - name: IMAGE
-        value: $(params.appImageName)
-      - name: DOCKERFILE
-        value: $(params.containerfile)
-      - name: TLSVERIFY
-        value: $(params.tlsVerify)
-      - name: BUILDER_IMAGE
-        value: quay.io/ploigos/ploigos-tool-containers:v1.0.0
-      - name: SKIP_PUSH
-        value: "true"
+      - name: outputImageTag
+        value: quay.io/dwinchell_redhat/my-image:latest
+      - name: verbose
+        value: $(params.verbose)
     runAfter:
     - ci-push-application-to-repository
     taskRef:
-      name: buildah
-    when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: source
-      workspace: app
-  - name: ci-static-image-scan-compliance
-    params:
-    runAfter:
-    - ci-create-container-image
-    taskRef:
-      name: ploigos-step-runner
+      name: create-container-image
     when:
     - input: $(tasks.ci-stage-gate.results.matches)
       operator: in
@@ -291,56 +271,55 @@ spec:
       workspace: home
     - name: app
       workspace: app
-  - name: ci-static-image-scan-vulnerability
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - ci-create-container-image
-    - ci-static-image-scan-compliance
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
-  - name: ci-push-container-image-to-repository
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - ci-static-image-scan-vulnerability
-    - ci-static-image-scan-compliance
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.ci-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
-  - name: ci-sign-container-image
+    - name: container-auth
+      workspace: container-auth
+#  - name: ci-static-image-scan-compliance
+#    params:
+#    runAfter:
+#    - ci-create-container-image
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.ci-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+#  - name: ci-static-image-scan-vulnerability
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - ci-create-container-image
+#    - ci-static-image-scan-compliance
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.ci-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+  - name: ci-push-container-image
     params:
       - name: verbose
         value: $(params.verbose)
       - name: imagePullPolicy
         value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
-    - ci-push-container-image-to-repository
+#    - ci-static-image-scan-vulnerability
+#    - ci-static-image-scan-compliance
+     - ci-create-container-image
     taskRef:
       name: ploigos-step-runner
     when:
@@ -353,21 +332,44 @@ spec:
       workspace: home
     - name: app
       workspace: app
-  - name: ci-generate-evidence
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - ci-sign-container-image
-    taskRef:
-      name: ploigos-step-runner
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
+
+#  - name: ci-sign-container-image
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - ci-push-container-image-to-repository
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.ci-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+
+#  - name: ci-generate-evidence
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - ci-sign-container-image
+#    taskRef:
+#      name: ploigos-step-runner
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+
   - name: dev-stage-gate
     params:
     - name: verbose
@@ -377,29 +379,32 @@ spec:
     - name: pattern
       value: $(params.devGitRefPatterns)
     runAfter:
-    - ci-generate-evidence
+#    - ci-generate-evidence
+     - ci-push-container-image-to-repository
     taskRef:
       name: ploigos-pattern-matcher
-  - name: dev-audit-attestation
-    params:
-    - name: verbose
-      value: $(params.verbose)
-    - name: environment
-      value: 'DEV'
-    runAfter:
-    - dev-stage-gate
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.dev-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
+
+#  - name: dev-audit-attestation
+#    params:
+#    - name: verbose
+#      value: $(params.verbose)
+#    - name: environment
+#      value: 'DEV'
+#    runAfter:
+#    - dev-stage-gate
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.dev-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+
   - name: dev-deploy-or-update-environment
     params:
       - name: verbose
@@ -407,7 +412,8 @@ spec:
       - name: imagePullPolicy
         value: $(params.workflowWorkersImagePullPolicy)
     runAfter:
-    - dev-audit-attestation
+#    - dev-audit-attestation
+     - dev-stage-gate
     taskRef:
       name: ploigos-step-runner
     when:
@@ -420,80 +426,83 @@ spec:
       workspace: home
     - name: app
       workspace: app
-  - name: dev-validate-environment-configuration
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - dev-deploy-or-update-environment
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.dev-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
-  - name: dev-run-user-acceptance-tests
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - dev-validate-environment-configuration
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.dev-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
-  - name: dev-generate-evidence
-    params:
-      - name: verbose
-        value: $(params.verbose)
-      - name: imagePullPolicy
-        value: $(params.workflowWorkersImagePullPolicy)
-    runAfter:
-    - dev-run-user-acceptance-tests
-    taskRef:
-      name: ploigos-step-runner
-    when:
-    - input: $(tasks.dev-stage-gate.results.matches)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: home
-      workspace: home
-    - name: app
-      workspace: app
-  finally:
-    - name: report
-      params:
-        - name: verbose
-          value: $(params.verbose)
-        - name: imagePullPolicy
-          value: $(params.workflowWorkersImagePullPolicy)
-      taskRef:
-        name: ploigos-step-runner
-      workspaces:
-        - name: home
-          workspace: home
-        - name: app
-          workspace: app
+
+#  - name: dev-validate-environment-configuration
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - dev-deploy-or-update-environment
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.dev-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+
+#  - name: dev-run-user-acceptance-tests
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - dev-validate-environment-configuration
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.dev-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+
+#  - name: dev-generate-evidence
+#    params:
+#      - name: verbose
+#        value: $(params.verbose)
+#      - name: imagePullPolicy
+#        value: $(params.workflowWorkersImagePullPolicy)
+#    runAfter:
+#    - dev-run-user-acceptance-tests
+#    taskRef:
+#      name: ploigos-step-runner
+#    when:
+#    - input: $(tasks.dev-stage-gate.results.matches)
+#      operator: in
+#      values:
+#      - "true"
+#    workspaces:
+#    - name: home
+#      workspace: home
+#    - name: app
+#      workspace: app
+#  finally:
+#    - name: report
+#      params:
+#        - name: verbose
+#          value: $(params.verbose)
+#        - name: imagePullPolicy
+#          value: $(params.workflowWorkersImagePullPolicy)
+#      taskRef:
+#        name: ploigos-step-runner
+#      workspaces:
+#        - name: home
+#          workspace: home
+#        - name: app
+#          workspace: app
   workspaces:
   - description: |
       Workspace for the container users home directory.
@@ -511,3 +520,6 @@ spec:
       Workspace to contain SonarQube settings file (sonar.properties). Use a ConfigMap or Secret to inject sonar.propertes.
       See https://github.com/tektoncd/catalog/tree/main/task/sonarqube-scanner/0.1 for usage.
     name: sonar-settings
+  - description: |
+      Used to pass a json configuration file with authentication information for container registries.
+    name: container-auth

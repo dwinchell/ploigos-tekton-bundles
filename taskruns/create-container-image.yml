@@ -1,11 +1,17 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: create-container-image
+  generateName: create-container-image-
 spec:
   taskRef:
     name: create-container-image
   params:
+    - name: outputImageTag
+      value: quay.io/dwinchell_redhat/my-image:latest
+    - name: pauseForDebugBeforeStepRun
+      value: "false"
+    - name: verbose
+      value: "true"
   workspaces:
     - name: home
       persistentVolumeClaim:
@@ -13,3 +19,6 @@ spec:
     - name: app
       persistentVolumeClaim:
         claimName: app
+    - name: container-auth
+      secret:
+        secretName: container-auth

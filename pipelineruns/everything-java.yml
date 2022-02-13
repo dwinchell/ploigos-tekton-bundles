@@ -29,3 +29,6 @@ spec:
   - name: sonar-settings
     secret:
       secretName: sonar-settings
+  - name: container-auth
+    secret:
+      secretName: container-auth
